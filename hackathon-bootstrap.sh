@@ -1,147 +1,126 @@
 #!/usr/bin/env bash
-# ============================================================================
-# Hackathon Bootstrap - RDF4J + SPARQLWorks
-# - Creates (or recreates) an RDF4J repository
-# - Loads schema + instance TTLs
-# - Adds global Tomcat CORS filter
-# - Skips Tomcat restart by default (Windows Git Bash safe)
-#
-# Files expected in same directory:
-#   ./simap-rdfs-schema.ttl
-#   ./pwe3-dynamic-topology.ttl
-#
-# Environment overrides (optional):
-#   REPO_ID=ietf-core-test         # default: ietf-core
-#   TOMCAT_HOME=/opt/tomcat        # e.g. /d/Apps/apache-tomcat-9.0.106 on Git Bash
-#   RDF4J_BASE=http://localhost:8080/rdf4j-server
-#   WORKBENCH_URL=http://localhost:8080/rdf4j-workbench
-#   SKIP_TOMCAT_RESTART=1          # default: 1 (safe on Windows Git Bash)
-#
-# Convenience flags:
-#   ./hackathon-bootstrap.sh --test    # sets REPO_ID=ietf-core-test and SKIP_TOMCAT_RESTART=1
-#   ./hackathon-bootstrap.sh --restart # forces Tomcat restart via startup.sh/shutdown.sh
-# ============================================================================
-
 set -euo pipefail
 
-### ---- Flags ----------------------------------------------------------------
-if [[ "${1-}" == "--test" ]]; then
-  export REPO_ID="${REPO_ID:-ietf-core-test}"
-  export SKIP_TOMCAT_RESTART=1
-elif [[ "${1-}" == "--restart" ]]; then
-  export SKIP_TOMCAT_RESTART=0
-fi
-
-### ---- Config ---------------------------------------------------------------
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
+# ----------------------------
+# Config (override via env)
+# ----------------------------
+SERVER="${SERVER:-http://localhost:8080/rdf4j-server}"
 REPO_ID="${REPO_ID:-ietf-core}"
-RDF4J_BASE="${RDF4J_BASE:-http://localhost:8080/rdf4j-server}"
-WORKBENCH_URL="${WORKBENCH_URL:-http://localhost:8080/rdf4j-workbench}"
-REPO_URL="$RDF4J_BASE/repositories/$REPO_ID"
-STATEMENTS_URL="$REPO_URL/statements"
+REPO_LABEL="${REPO_LABEL:-$REPO_ID}"
 
-# Tomcat - only needed for CORS edit / restart (skip by default on Windows)
-TOMCAT_HOME="${TOMCAT_HOME:-/opt/tomcat}"
-WEBXML="$TOMCAT_HOME/conf/web.xml"
-SKIP_TOMCAT_RESTART="${SKIP_TOMCAT_RESTART:-1}"
+SCHEMA_FILE="${SCHEMA_FILE:-simap-rdfs-schema.ttl}"
+INSTANCE_FILE="${INSTANCE_FILE:-pwe3-dynamic-topology.ttl}"
 
-# Files: expected alongside the script
-SCHEMA_FILE="$SCRIPT_DIR/simap-rdfs-schema.ttl"
-INSTANCE_FILE="$SCRIPT_DIR/pwe3-dynamic-topology.ttl"
+SCHEMA_CTX="${SCHEMA_CTX:-<http://www.huawei.com/graph/schema>}"
+INSTANCE_CTX="${INSTANCE_CTX:-<http://www.huawei.com/graph/instance/pwe3-dynamic-topology>}"
 
-CTX_SCHEMA="http://www.huawei.com/graph/schema"
-CTX_INSTANCE="http://www.huawei.com/graph/instance/pwe3-dynamic-topology"
+# If your corporate proxy is set, we force direct-to-localhost for curl
+CURL="curl --silent --show-error --noproxy localhost"
 
-### ---- Curl wrapper: always bypass proxy for localhost ----------------------
-# Prevent CNTLM/other proxies interfering with local server calls
-export no_proxy=localhost,127.0.0.1
-export NO_PROXY=localhost,127.0.0.1
-CURL="curl --noproxy localhost"
+say() { printf "\n[%s] %s\n" "$(date +%H:%M:%S)" "$*"; }
+fail() { echo "ERROR: $*" >&2; exit 1; }
 
-die() { echo "ERROR: $*" >&2; exit 1; }
+# ----------------------------
+# Sanity checks
+# ----------------------------
+command -v curl >/dev/null || fail "curl not found"
+[[ -f "$SCHEMA_FILE" ]]   || fail "Missing $SCHEMA_FILE (expected beside this script)"
+[[ -f "$INSTANCE_FILE" ]] || fail "Missing $INSTANCE_FILE (expected beside this script)"
 
-need() { command -v "$1" >/dev/null 2>&1 || die "Missing dependency: $1"; }
+say "RDF4J Server: $SERVER"
+say "Repository   : $REPO_ID  (label: $REPO_LABEL)"
+say "Files        : $SCHEMA_FILE  |  $INSTANCE_FILE"
 
-### ---- Sanity checks --------------------------------------------------------
-need curl
-[[ -f "$SCHEMA_FILE" ]]   || die "Schema file not found: $SCHEMA_FILE"
-[[ -f "$INSTANCE_FILE" ]] || die "Instance file not found: $INSTANCE_FILE"
+# ----------------------------
+# (1) One-time CORS instructions (manual)
+# ----------------------------
+cat <<'TIP'
 
-echo "[Info] Repository ID            : $REPO_ID"
-echo "[Info] RDF4J Server             : $RDF4J_BASE"
-echo "[Info] Workbench                : $WORKBENCH_URL"
-echo "[Info] Schema TTL               : $SCHEMA_FILE"
-echo "[Info] Instance TTL             : $INSTANCE_FILE"
-echo "[Info] Tomcat (for CORS edit)   : $TOMCAT_HOME"
-echo "[Info] Skip Tomcat restart      : $SKIP_TOMCAT_RESTART"
-echo
+================================ CORS / Tomcat instructions ================================
 
-### ---- Add Tomcat CORS (idempotent) ----------------------------------------
-if [[ -f "$WEBXML" ]]; then
-  if ! grep -q 'org.apache.catalina.filters.CorsFilter' "$WEBXML"; then
-    echo "[CORS] Adding CorsFilter to $WEBXML (backup at web.xml.bak)"
-    cp "$WEBXML" "$WEBXML.bak"
+If you have NOT enabled CORS globally yet, do this once:
 
-    awk '
-      /<\/web-app>/ && !done {
-        print "    <!-- === Global CORS for all webapps (including RDF4J Server) === -->"
-        print "    <filter>"
-        print "      <filter-name>CorsFilter</filter-name>"
-        print "      <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>"
-        print "      <init-param><param-name>cors.allowed.origins</param-name><param-value>*</param-value></init-param>"
-        print "      <init-param><param-name>cors.allowed.methods</param-name><param-value>GET,POST,HEAD,OPTIONS</param-value></init-param>"
-        print "      <init-param><param-name>cors.allowed.headers</param-name><param-value>Content-Type,Accept,Origin,Authorization,Access-Control-Request-Method,Access-Control-Request-Headers</param-value></init-param>"
-        print "    </filter>"
-        print "    <filter-mapping><filter-name>CorsFilter</filter-name><url-pattern>/*</url-pattern></filter-mapping>"
-        done=1
-      }
-      { print }
-    ' "$WEBXML" > "$WEBXML.tmp" && mv "$WEBXML.tmp" "$WEBXML"
-  else
-    echo "[CORS] CorsFilter already present - skipping"
-  fi
+  1) Stop Tomcat (close window or run:  D:\Apps\apache-tomcat-9.0.106\bin\shutdown.bat)
+  2) Edit  D:\Apps\apache-tomcat-9.0.106\conf\web.xml  and add near the end, before </web-app>:
+
+     <filter>
+       <filter-name>CorsFilter</filter-name>
+       <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+       <init-param>
+         <param-name>cors.allowed.origins</param-name>
+         <param-value>*</param-value>
+       </init-param>
+       <init-param>
+         <param-name>cors.allowed.methods</param-name>
+         <param-value>GET,POST,HEAD,OPTIONS</param-value>
+       </init-param>
+       <init-param>
+         <param-name>cors.allowed.headers</param-name>
+         <param-value>Content-Type,Accept,Origin,Authorization,Access-Control-Request-Method,Access-Control-Request-Headers</param-value>
+       </init-param>
+       <init-param>
+         <param-name>cors.exposed.headers</param-name>
+         <param-value>Access-Control-Allow-Origin,Access-Control-Allow-Credentials</param-value>
+       </init-param>
+       <init-param>
+         <param-name>cors.support.credentials</param-name>
+         <param-value>false</param-value>
+       </init-param>
+     </filter>
+     <filter-mapping>
+       <filter-name>CorsFilter</filter-name>
+       <url-pattern>/*</url-pattern>
+     </filter-mapping>
+
+  3) Start Tomcat again (put your own path):
+       D:\Apps\apache-tomcat-9.0.106\bin\startup.bat
+
+When Tomcat is fully up, come back to this window and PRESS ENTER to continue.
+===========================================================================================
+
+TIP
+
+# ----------------------------
+# (2) Wait for user to confirm Tomcat is up
+# ----------------------------
+read -r -p "Press ENTER once Tomcat is running and http://localhost:8080 is reachable..."
+
+# Quick health check (RDF4J CSV list)
+say "Checking RDF4J availability…"
+$CURL -f "$SERVER/repositories" >/dev/null || fail "RDF4J not reachable at $SERVER"
+
+# ----------------------------
+# Helper: check if repository exists
+# ----------------------------
+repo_exists() {
+  $CURL -f "$SERVER/repositories" \
+    | tr -d '\r' \
+    | awk -F, 'NR>1 {print $2}' \
+    | grep -Fxq "$REPO_ID"
+}
+
+# ----------------------------
+# (3) Create or recreate repository
+# ----------------------------
+if repo_exists; then
+  say "Repository '$REPO_ID' already exists — deleting it to start clean…"
+  $CURL -f -X DELETE "$SERVER/repositories/$REPO_ID" || fail "Delete failed"
 else
-  echo "[CORS] Skipping (no Tomcat web.xml found at $WEBXML)"
+  say "Repository '$REPO_ID' not present — creating fresh."
 fi
 
-### ---- Tomcat restart (safe default: skip for Windows/Git Bash) ------------
-if [[ "$SKIP_TOMCAT_RESTART" == "1" ]]; then
-  echo "[Tomcat] Skipping restart (safe mode)."
-  echo "         If needed on Windows, restart manually via CMD:"
-  echo "         cd /d %TOMCAT_HOME%\\bin && shutdown.bat && startup.bat"
-else
-  echo "[Tomcat] Restarting..."
-  if [[ -x "$TOMCAT_HOME/bin/shutdown.sh" ]]; then "$TOMCAT_HOME/bin/shutdown.sh" || true; sleep 2; fi
-  if [[ -x "$TOMCAT_HOME/bin/startup.sh"  ]]; then "$TOMCAT_HOME/bin/startup.sh"; else die "startup.sh not found in $TOMCAT_HOME/bin"; fi
-fi
-
-### ---- Wait for RDF4J server -----------------------------------------------
-echo -n "[RDF4J] Waiting for server at $RDF4J_BASE"
-for i in {1..60}; do
-  if $CURL -fsS "$RDF4J_BASE" >/dev/null 2>&1; then echo " - up"; break; fi
-  echo -n "."
-  sleep 1
-  [[ "$i" -eq 60 ]] && die "RDF4J Server did not respond in time."
-done
-
-### ---- Delete existing repo (if any) ---------------------------------------
-echo "[RDF4J] Deleting repository $REPO_ID (if exists)"
-$CURL -fsS -X DELETE "$RDF4J_BASE/repositories/$REPO_ID" >/dev/null 2>&1 || true
-
-### ---- Create repository (verbose to show errors) --------------------------
-echo "[RDF4J] Creating repository $REPO_ID"
-
-read -r -d '' REPO_CFG <<TTL
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rep:  <http://www.openrdf.org/config/repository#> .
-@prefix sr:   <http://www.openrdf.org/config/repository/sail#> .
-@prefix sail: <http://www.openrdf.org/config/sail#> .
-@prefix ns:   <http://www.openrdf.org/config/sail/native#> .
+# Build a local config file (avoid /tmp on Windows Git-Bash)
+CFG_FILE="./.${REPO_ID}.config.ttl"
+cat > "$CFG_FILE" <<TTL
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rep:   <http://www.openrdf.org/config/repository#> .
+@prefix sr:    <http://www.openrdf.org/config/repository/sail#> .
+@prefix sail:  <http://www.openrdf.org/config/sail#> .
+@prefix ns:    <http://www.openrdf.org/config/sail/native#> .
 
 [] a rep:Repository ;
-   rep:repositoryID "${REPO_ID}" ;
-   rdfs:label "${REPO_ID}" ;
+   rep:repositoryID "$REPO_ID" ;
+   rdfs:label "$REPO_LABEL" ;
    rep:repositoryImpl [
      rep:repositoryType "openrdf:SailRepository" ;
      sr:sailImpl [
@@ -151,33 +130,72 @@ read -r -d '' REPO_CFG <<TTL
    ] .
 TTL
 
-# Verbose, no proxy for localhost
-$CURL -v -X POST "$RDF4J_BASE/repositories" \
-  -H "Accept: application/sparql-results+xml" \
-  -F "config=@-;type=application/x-turtle" <<<"$REPO_CFG"
+say "Creating repository '$REPO_ID'…"
+# Preferred multipart form
+$CURL -f -X POST "$SERVER/repositories" \
+  -H "Accept: text/plain" \
+  -F "config=@${CFG_FILE};type=application/x-turtle" \
+  >/dev/null || fail "Repository creation failed"
 
-# Confirm creation
-echo "[RDF4J] Current repositories:"
-$CURL -s "$RDF4J_BASE/repositories" | sed -n 's:.*<id>\(.*\)</id>.*:\1:p' || true
-echo
+rm -f "$CFG_FILE"
 
-### ---- Load data -----------------------------------------------------------
-echo "[RDF4J] Loading schema: $SCHEMA_FILE"
-$CURL -v -X POST "$STATEMENTS_URL?context=<${CTX_SCHEMA}>" \
+repo_exists || fail "Repository was not created"
+
+say "Repository created."
+
+# ----------------------------
+# (4) Upload schema and instance
+# ----------------------------
+encode_ctx() {
+  # Keep angle brackets in the query string but URL-encode them as required
+  python - <<'PY' "$1"
+import sys, urllib.parse
+ctx=sys.argv[1]
+print(urllib.parse.quote(ctx, safe='<>:/#'))
+PY
+}
+
+SCHEMA_CTX_Q=$(encode_ctx "$SCHEMA_CTX")
+INSTANCE_CTX_Q=$(encode_ctx "$INSTANCE_CTX")
+
+say "Uploading schema to context $SCHEMA_CTX …"
+$CURL -f -X POST \
+  "$SERVER/repositories/$REPO_ID/statements?context=${SCHEMA_CTX_Q}" \
   -H "Content-Type: text/turtle" \
-  --data-binary @"$SCHEMA_FILE"
+  --data-binary @"$SCHEMA_FILE" \
+  >/dev/null || fail "Schema upload failed"
 
-echo "[RDF4J] Loading instance: $INSTANCE_FILE"
-$CURL -v -X POST "$STATEMENTS_URL?context=<${CTX_INSTANCE}>" \
+say "Uploading instance to context $INSTANCE_CTX …"
+$CURL -f -X POST \
+  "$SERVER/repositories/$REPO_ID/statements?context=${INSTANCE_CTX_Q}" \
   -H "Content-Type: text/turtle" \
-  --data-binary @"$INSTANCE_FILE"
+  --data-binary @"$INSTANCE_FILE" \
+  >/dev/null || fail "Instance upload failed"
 
-### ---- Final info ----------------------------------------------------------
-echo
-echo "Ready!"
-echo "Workbench (open this):"
-echo "  $WORKBENCH_URL/repositories/$REPO_ID/summary"
-echo
-echo "SPARQL endpoint for SPARQLWorks:"
-echo "  $REPO_URL"
-echo
+# ----------------------------
+# (5) Report counts and useful URLs
+# ----------------------------
+say "Done. Repository contents (CSV):"
+$CURL -f "$SERVER/repositories" | tr -d '\r' | grep ",$REPO_ID," || true
+
+say "Query endpoint for SPARQLWorks:"
+echo "  $SERVER/repositories/$REPO_ID"
+
+say "WorkBench (browser):"
+echo "  http://localhost:8080/rdf4j-workbench/repositories/$REPO_ID/summary"
+
+say "Contexts you used:"
+echo "  Schema  : $SCHEMA_CTX"
+echo "  Instance: $INSTANCE_CTX"
+
+say "Tip: in SPARQLWorks use FROM to pin contexts, e.g.:"
+cat <<EOF
+
+  SELECT (COUNT(*) as ?n) WHERE {
+    GRAPH $SCHEMA_CTX { ?s ?p ?o }
+  }
+
+  SELECT (COUNT(*) as ?n) WHERE {
+    GRAPH $INSTANCE_CTX { ?s ?p ?o }
+  }
+EOF
