@@ -1,11 +1,39 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix mgmt: <http://www.huawei.com/ontology/ops-mgmt/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix org: <http://www.w3.org/ns/org#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix noria: <https://w3id.org/noria/ontology/> .
 
 # 2.1 Engineer instance
 <http://www.huawei.com/data/people/michael-chen>
-  a mgmt:Engineer ;
-  <http://www.w3.org/2000/01/rdf-schema#label> "Michael Chen" .
+  a mgmt:Engineer, foaf:Person ;
+  <http://www.w3.org/2000/01/rdf-schema#label> "Michael Chen" ;
+  foaf:firstName "Michael" ;
+  foaf:lastName "Chen" ;
+  org:memberOf <https://w3id.org/noria/agent/TEAM_TOY_Support01>;
+.
+
+# ORG instances
+
+<https://w3id.org/noria/agent/TEAM_TOY_Support01>
+  a org:OrganizationalUnit;
+  rdfs:label "Support01";
+  org:classification <https://w3id.org/noria/kos/org/ou-classification/tsg>;
+  org:identifier "Support01";
+  prov:wasDerivedFrom "noria-ontology-toy-example" ;
+.
+
+<https://w3id.org/noria/agent/ORG_ACME>
+  a org:Organization;
+  rdfs:label "ACME";
+  owl:sameAs <http://www.wikidata.org/entity/Q288523> ;
+  org:hasUnit <https://w3id.org/noria/agent/TEAM_TOY_Mgmt01>, <https://w3id.org/noria/agent/TEAM_TOY_Support01>,
+              <https://w3id.org/noria/agent/TEAM_TOY_Support02>, <https://w3id.org/noria/agent/TEAM_TOY_Support03>;
+.
 
 # 2.2 Link (core-path-network overlay)
 <http://www.huawei.com/data/network/core-path-network/link/fd23ea9e-927c-11ef-8000-286ed4897b20_NEWID1_DIRECTION1>
@@ -25,3 +53,37 @@
   a <http://www.huawei.com/ontology/ietf-network/networks/network/node/termination-point> ;
   mgmt:managedBy <http://www.huawei.com/data/people/michael-chen> ;
   mgmt:assignedOn "2025-10-30T10:07:00Z"^^xsd:dateTime .
+
+# === TroubleTicket ===========================================================
+
+<https://w3id.org/noria/document/TT_TOY2022TT>
+  a noria:TroubleTicket;
+  dcterms:created "2022-04-26T12:00:00Z";
+  dcterms:description """Toy example: service access failure from term1. Probable cause: network issue.""";
+  dcterms:identifier "TOY2022TT";
+  dcterms:modified "2022-04-26T12:07:00Z";
+  dcterms:extent "P0Y0M0DT0H10M0S" ;
+  noria:troubleTicketDetectionDateTime "2022-04-26T11:58:00Z";
+  noria:troubleTicketRelatedResource <http://www.huawei.com/data/network/layer3-network/node/NE-167772538> ;
+  noria:troubleTicketStatusCurrent <https://w3id.org/noria/kos/TroubleTicket/status/current> ;
+  noria:documentStatusHistory <https://w3id.org/noria/event/LOG_TOY_TT_TOY2022TT_STATUS_Current> ;
+  dcterms:hasPart
+          <https://w3id.org/noria/document/TTN_TOY2022TT_2022-04-26T12:05:00Z_CU_LF001>,
+          <https://w3id.org/noria/document/TTN_TOY2022TT_2022-04-26T12:07:00Z_CU_LF004>;
+  dcterms:relation
+          <https://w3id.org/noria/event/LOG_TOY_as2_2022-04-26%2011%3A57%3A00.000> ,
+          <https://w3id.org/noria/event/LOG_TOY_term1_2022-04-26%2011%3A58%3A00.000> ,
+          <https://w3id.org/noria/event/LOG_TOY_srv1_2022-04-26%2011%3A58%3A00.000> ,
+          <https://w3id.org/noria/event/LOG_TOY_as2_2022-04-26%2012%3A06%3A00.000> ,
+          <https://w3id.org/noria/event/LOG_TOY_srv1_2022-04-26%2012%3A06%3A30.000> ;
+  prov:wasDerivedFrom "noria-ontology-toy-example" ;
+.
+
+<https://w3id.org/noria/document/TTN_TOY2022TT_2022-04-26T12:05:00Z_CU_LF001>
+  a noria:TroubleTicketNote ;
+  dcterms:creator <http://www.huawei.com/data/people/michael-chen> ;
+  dcterms:created "2022-04-26T12:05:00Z" ;
+  dcterms:description  """Service access diagnosis: no route to srv1. Please check MAN connectivity.""" ;
+  noria:troubleTicketNoteOperationType <https://w3id.org/noria/kos/TroubleTicket/operationType/comment> ;
+  prov:wasDerivedFrom "noria-ontology-toy-example" ;
+.

@@ -1,0 +1,64 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX noria: <https://w3id.org/noria/ontology/>
+PREFIX org: <http://www.w3.org/ns/org#>
+PREFIX mgmt: <http://www.huawei.com/ontology/ops-mgmt/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+CONSTRUCT
+{
+    ?agent a foaf:Person .
+    ?agent org:memberOf ?org .
+    ?agent noria:agentManagesResource ?resource .
+
+    ?parent_org a org:Organization .
+    ?org a org:OrganizationalUnit .
+    ?parent_org org:hasUnit ?org .
+    ?parent_org owl:sameAs ?externalRef .
+
+    ?ttn a noria:TroubleTicketNote .
+    ?ttn dcterms:creator ?agent .
+
+    ?tt a noria:TroubleTicket .
+    ?tt noria:troubleTicketRelatedResource ?resource .
+    ?tt dcterms:description ?tt_desc .
+    ?tt dcterms:hasPart ?ttn .
+
+    ?resource noria:networkLinkTerminationResource ?linkSource .
+    ?resource noria:networkLinkTerminationResource ?linkDest .
+
+}
+WHERE
+{
+    ?agent a foaf:Person ;
+    org:memberOf ?org ;
+    mgmt:manages | ^mgmt:managedBy  ?resource .
+
+    OPTIONAL {
+        ?parent_org org:hasUnit ?org.
+        ?parent_org owl:sameAs ?externalRef.
+    }
+
+    OPTIONAL {
+        ?ttn a noria:TroubleTicketNote ;
+            dcterms:creator ?agent .
+    }
+
+    OPTIONAL {
+        ?tt noria:troubleTicketRelatedResource ?resource ;
+            dcterms:description ?tt_desc .
+    }
+
+    OPTIONAL {
+        ?tt dcterms:hasPart ?ttn .
+    }
+
+    OPTIONAL {
+        ?resource <http://www.huawei.com/ontology/ietf-network/networks/network/link/hasSource> / <http://www.huawei.com/ontology/ietf-network/networks/network/link/destination/dest-node> ?linkSource .
+    }
+
+    OPTIONAL {
+        ?resource <http://www.huawei.com/ontology/ietf-network/networks/network/link/hasDest> / <http://www.huawei.com/ontology/ietf-network/networks/network/link/destination/dest-node> ?linkDest .
+    }
+
+}
+LIMIT 100

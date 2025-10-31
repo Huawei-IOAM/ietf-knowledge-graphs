@@ -12,13 +12,13 @@ Outcome: consistent schema + instance data for queries, validation, and visualis
 
 # 🚦 Quick start (TL;DR)
 
-1. Open RDF4J Workbench (locally or publicly)
+1. Open [RDF4J Workbench](https://rdf4j.org/documentation/tools/server-workbench/) (locally or publicly)
 2. Create repo ID
 3. Import files in this order:
    - simap-rdfs-schema.ttl
    - pwe3-static-topology.ttl
    - pwe3-dynamic-topology.ttl
-   - Relations-IETF-Noria.ttl (optional alignment)
+   - relations-IETF-Noria.ttl (optional alignment)
 4. SPARQL endpoint (use in SPARQLWorks): http://localhost:8080/rdf4j-server/repositories/...
 
 # 📦 Repository structure
@@ -55,17 +55,25 @@ Outcome: consistent schema + instance data for queries, validation, and visualis
 
 # 🧪 How to run (RDF4J Workbench)
 
-- Open http://localhost:8080/rdf4j-workbench.
-- Create repository --> Native store
+- Open the rdf4j-workbench UI => http://localhost:8080/rdf4j-workbench
+
+- Create repository => http://localhost:8080/rdf4j-workbench/repositories/NONE/create
+  - Type : Native store
   - Repository ID: name
-- Import (in this order):
-  - simap-rdfs-schema.ttl --> (Context: http://www.huawei.com/graph/schema)
+
+- Import data into the *name* repository, in the following order => http://localhost:8080/rdf4j-workbench/repositories/name/add
+  - schema/simap-rdfs-schema.ttl --> (Context: http://www.huawei.com/graph/schema)
   - instances/pwe3-static-topology.ttl --> (Context: http://www.huawei.com/graph/instance/pwe3-static-topology)
   - instances/pwe3-dynamic-topology.ttl --> (Context: http://www.huawei.com/graph/instance/pwe3-dynamic-topology)
-  - alignment/Relations-IETF-Noria.ttl (optional) --> (Context: http://www.huawei.com/graph/alignment)
-- SPARQL endpoint (for tools):
-  - http://localhost:8080/rdf4j-server/repositories/name
-  - or a public server domain if you want to take the endpoint
+  - alignment/relations-IETF-Simap-Noria.ttl (optional) --> (Context: http://www.huawei.com/graph/alignment)
+  - schema/ops-mgmt.ttl (optional) --> (Context: http://www.huawei.com/graph/schema)
+  - alignment/relations-ops-mgmt-Noria.ttl (optional) --> (Context: http://www.huawei.com/graph/alignment)
+  - instances/ops-mgmt-instances.ttl (optional) --> (Context: http://www.huawei.com/graph/instance/ops-mgmt-instances)
+
+- Query data through the SPARQL endpoint (for tools):
+  - SPARQL endpoint : http://localhost:8080/rdf4j-server/repositories/name or a public server domain if you want to take the endpoint
+  - RDF4J SPARQL endpoint UI : http://localhost:8080/rdf4j-workbench/repositories/name/query 
+
 - Sanity check (Workbench --> SPARQL):
 	```
 	SELECT (COUNT(*) AS ?triples) WHERE { ?s ?p ?o }
@@ -74,8 +82,10 @@ Outcome: consistent schema + instance data for queries, validation, and visualis
 
 ## Local use (recommended)
 
-- Download SPARQLWorks from https://github.com/danielhmills/sparqlworks and open sparqlworks.html locally (or serve via python -m http.server).
-- Endpoint: http://localhost:8080/rdf4j-server/repositories/...
+- Download SPARQLWorks from https://github.com/danielhmills/sparqlworks
+- Open the `sparqlworks.html` file locally using your favorite Web browser (or serve via python -m http.server).
+- Set *Query Mode* : Advanced
+- Set *SPARQL Endpoint* : http://localhost:8080/rdf4j-server/repositories/name
 - Run CONSTRUCT queries (see below) for live graph visuals.
 
 If your browser blocks cross-origin calls, enable CORS on Tomcat (global conf/web.xml):
@@ -99,11 +109,13 @@ Restart Tomcat afterwards.
 - Make sure the proxy/app adds the CORS headers above.
 - Alternative: use a tunnelling tool (e.g., LocalTunnel, Cloudflared). Ensure your corporate proxy policy allows it.
 
-# 🧭 Example queries (ready for SPARQLWorks):
+# 🧭 Example queries (ready for SPARQLWorks)
 
 1. Root --> networks --> network-types : [rq/rq_simap_root_networks_network-types.sparql](rq/rq_simap_root_networks_network-types.sparql)
 2. Links with Source/Dest --> Termination Points : [rq/rq_simap_links_tp.sparql](rq/rq_simap_links_tp.sparql)
 3. Supporting-node : [rq/rq_simap_supporting-node.sparql](rq/rq_simap_supporting-node.sparql)
+4. Node managed by and potential relationship to an incident : [rq/rq_noria_managedBy.sparql](rq/rq_noria_managedBy.sparql)
+5. Implemented alignment relationships across models : [rq/rq_model-relationships.sparql](rq/rq_model-relationships.sparql)
 
 # ✅ Demo checklist
 
