@@ -1,0 +1,300 @@
+{
+  "networks": [
+    {
+      "id": "service-network",
+      "name": "PWE3 Service Layer",
+      "nodes": [
+        {
+          "id": "fd20adfc-927c-11ef-8000-286ed4897b20",
+          "name": "PWE3XC:NE=167772695",
+          "termination-points": [
+            {
+              "id": "fd21f4be-927c-11ef-8000-286ed4897b20",
+              "name": "SAP:v511:PWE3TRAIL75",
+              "supporting": {
+                "tp": "a6107a6a-99bd-4964-ab24-c78408792725",
+                "node": "fd20adfc-927c-11ef-8000-286ed4897b20A",
+                "network": "service-path-network"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "fd20adfc-927c-11ef-8000-286ed4897b20A",
+              "network": "service-path-network"
+            }
+          ]
+        },
+        {
+          "id": "fd20512c-927c-11ef-8000-286ed4897b20",
+          "name": "PWE3XC:NE=167772200",
+          "termination-points": [
+            {
+              "id": "fd219884-927c-11ef-8000-286ed4897b20",
+              "name": "SAP:v511:PWE3TRAIL75",
+              "supporting": {
+                "tp": "01abe438-1dbc-4ccc-8238-288e2f6126ed",
+                "node": "fd20512c-927c-11ef-8000-286ed4897b20A",
+                "network": "service-path-network"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "fd20512c-927c-11ef-8000-286ed4897b20A",
+              "network": "service-path-network"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "fd1f10aa-927c-11ef-8000-286ed4897b20",
+          "name": "PWE3Trail-Static",
+          "source": {
+            "node": "fd20adfc-927c-11ef-8000-286ed4897b20",
+            "termination-point": "fd21f4be-927c-11ef-8000-286ed4897b20"
+          },
+          "destination": {
+            "node": "fd20512c-927c-11ef-8000-286ed4897b20",
+            "termination-point": "fd219884-927c-11ef-8000-286ed4897b20"
+          },
+          "supporting": [
+            {
+              "link": "fd23ea9e-927c-11ef-8000-286ed4897b20",
+              "network": "service-path-network"
+            }
+          ]
+        }
+      ],
+      "supporting-networks": ["service-path-network", "static-cr-layer", "layer3-network"]
+    },
+    {
+      "id": "service-path-network",
+      "name": "Service Path Layer",
+      "nodes": [
+        {
+          "id": "fd20adfc-927c-11ef-8000-286ed4897b20A",
+          "name": "PWE3XC:NE=167772695",
+          "termination-points": [
+            {
+              "id": "a6107a6a-99bd-4964-ab24-c78408792725",
+              "name": "PW=31|5:Peer=1.1.1.208",
+              "supporting": {
+                "tp": "43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+                "node": "ff089f0a-a7b7-494b-92e4-022af7f20322",
+                "network": "static-cr-layer"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "ff089f0a-a7b7-494b-92e4-022af7f20322",
+              "network": "static-cr-layer"
+            }
+          ]
+        },
+        {
+          "id": "fd20512c-927c-11ef-8000-286ed4897b20A",
+          "name": "PWE3XC:NE=167772200",
+          "termination-points": [
+            {
+              "id": "01abe438-1dbc-4ccc-8238-288e2f6126ed",
+              "name": "PW=31|5:Peer=1.1.1.207",
+              "supporting": {
+                "tp": "06f7c0e4-08fb-48ef-9b8e-af980576bdd3",
+                "node": "e02be0cc-297e-4d07-8429-2474181f7ab5",
+                "network": "static-cr-layer"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "e02be0cc-297e-4d07-8429-2474181f7ab5",
+              "network": "static-cr-layer"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "fd23ea9e-927c-11ef-8000-286ed4897b20",
+          "name": "PWTrail",
+          "source": {
+            "node": "fd20adfc-927c-11ef-8000-286ed4897b20A",
+            "termination-point": "a6107a6a-99bd-4964-ab24-c78408792725"
+          },
+          "destination": {
+            "node": "fd20512c-927c-11ef-8000-286ed4897b20A",
+            "termination-point": "01abe438-1dbc-4ccc-8238-288e2f6126ed"
+          },
+          "supporting": [
+            {
+              "link": "TUNNELTRAIL=41:SEG1:NEWID",
+              "network": "static-cr-layer"
+            },
+            {
+              "link": "TUNNELTRAIL=41:SEG2:NEWID",
+              "network": "static-cr-layer"
+            }
+          ]
+        }
+      ],
+      "supporting-networks": ["static-cr-layer", "layer3-network"]
+    },
+    {
+      "id": "static-cr-layer",
+      "name": "Constraint-Routed Switched Paths",
+      "nodes": [
+        {
+          "id": "ff089f0a-a7b7-494b-92e4-022af7f20322",
+          "name": "TUNNELHOP=105:Tunnel48:egress",
+          "termination-points": [
+            {
+              "id": "43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+              "name": "FNLTP:GigabitEthernet0/2/3",
+              "supporting": {
+                "tp": "L3:43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+                "node": "NE=167772695",
+                "network": "layer3-network"
+              }
+            }
+          ]
+        },
+        {
+          "id": "ed91ed79-e346-40cc-af35-8df5ee552150",
+          "name": "TUNNELHOP=104:65_2266_2309:transit",
+          "termination-points": [
+            {
+              "id": "74a8e346-648b-488d-9b53-16f445a4213a",
+              "name": "FNLTP:GigabitEthernet0/2/3",
+              "supporting": {
+                "tp": "L3:74a8e346-648b-488d-9b53-16f445a4213a",
+                "node": "NE=167772538",
+                "network": "layer3-network"
+              }
+            },
+            {
+              "id": "0e0a6aa6-235e-4e37-ba33-19bfb0dbf2b2",
+              "name": "FNLTP:GigabitEthernet0/2/2",
+              "supporting": {
+                "tp": "L3:0e0a6aa6-235e-4e37-ba33-19bfb0dbf2b2",
+                "node": "NE=167772538",
+                "network": "layer3-network"
+              }
+            }
+          ]
+        },
+        {
+          "id": "e02be0cc-297e-4d07-8429-2474181f7ab5",
+          "name": "TUNNELHOP=103:Tunnel54:ingress",
+          "termination-points": [
+            {
+              "id": "06f7c0e4-08fb-48ef-9b8e-af980576bdd3",
+              "name": "FNLTP:GigabitEthernet0/2/1",
+              "supporting": {
+                "tp": "L3:06f7c0e4-08fb-48ef-9b8e-af980576bdd3",
+                "node": "NE=167772200",
+                "network": "layer3-network"
+              }
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "TUNNELTRAIL=41:SEG1:NEWID",
+          "name": "TUNNELTRAIL=41",
+          "source": {
+            "node": "ff089f0a-a7b7-494b-92e4-022af7f20322",
+            "termination-point": "43abf9e4-ee41-4f74-8a62-01430d3c6d9f"
+          },
+          "destination": {
+            "node": "ed91ed79-e346-40cc-af35-8df5ee552150",
+            "termination-point": "74a8e346-648b-488d-9b53-16f445a4213a"
+          }
+        },
+        {
+          "id": "TUNNELTRAIL=41:SEG2:NEWID",
+          "name": "TUNNELTRAIL=41",
+          "source": {
+            "node": "ed91ed79-e346-40cc-af35-8df5ee552150",
+            "termination-point": "0e0a6aa6-235e-4e37-ba33-19bfb0dbf2b2"
+          },
+          "destination": {
+            "node": "e02be0cc-297e-4d07-8429-2474181f7ab5",
+            "termination-point": "06f7c0e4-08fb-48ef-9b8e-af980576bdd3"
+          }
+        }
+      ],
+      "supporting-networks": ["layer3-network"]
+    },
+    {
+      "id": "layer3-network",
+      "name": "Layer3 Connectivity Layer",
+      "nodes": [
+        {
+          "id": "NE=167772695",
+          "name": "FN:NE=167772695",
+          "termination-points": [
+            {
+              "id": "L3:43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+              "name": "FNLTP:GigabitEthernet0/2/3"
+            }
+          ]
+        },
+        {
+          "id": "NE=167772538",
+          "name": "FN:NE=167772538",
+          "termination-points": [
+            {
+              "id": "L3:74a8e346-648b-488d-9b53-16f445a4213a",
+              "name": "FNLTP:GigabitEthernet0/2/3"
+            },
+            {
+              "id": "L3:0e0a6aa6-235e-4e37-ba33-19bfb0dbf2b2",
+              "name": "FNLTP:GigabitEthernet0/2/2"
+            }
+          ]
+        },
+        {
+          "id": "NE=167772200",
+          "name": "FN:NE=167772200",
+          "termination-points": [
+            {
+              "id": "L3:06f7c0e4-08fb-48ef-9b8e-af980576bdd3",
+              "name": "FNLTP:GigabitEthernet0/2/1"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "7807ffc0-c949-4365-9acc-23c4831937cb",
+          "name": "LL1",
+          "source": {
+            "node": "NE=167772538",
+            "termination-point": "L3:0e0a6aa6-235e-4e37-ba33-19bfb0dbf2b2"
+          },
+          "destination": {
+            "node": "NE=167772200",
+            "termination-point": "L3:06f7c0e4-08fb-48ef-9b8e-af980576bdd3"
+          }
+        },
+        {
+          "id": "27d2f2a9-016b-4842-b59a-5916404f3c1d",
+          "name": "LL2",
+          "source": {
+            "node": "NE=167772538",
+            "termination-point": "L3:74a8e346-648b-488d-9b53-16f445a4213a"
+          },
+          "destination": {
+            "node": "NE=167772695",
+            "termination-point": "L3:43abf9e4-ee41-4f74-8a62-01430d3c6d9f"
+          }
+        }
+      ],
+      "supporting-networks": []
+    }
+  ]
+}
