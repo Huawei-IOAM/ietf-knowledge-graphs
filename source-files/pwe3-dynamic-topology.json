@@ -1,0 +1,461 @@
+{
+  "networks": [
+    {
+      "id": "service-network",
+      "name": "PWE3 Service Layer",
+      "nodes": [
+        {
+          "id": "88d74406-9277-11ef-8000-286ed4897b20",
+          "name": "PWE3XC:NE=167772695",
+          "termination-points": [
+            {
+              "id": "88d8aada-9277-11ef-8000-286ed4897b20",
+              "name": "SAP:v510:PWE3TRAIL74:SIDEA",
+              "supporting": {
+                "tp": "1e7a5ccc-9ebf-430d-b738-cbb1b672d15f",
+                "node": "88d74406-9277-11ef-8000-286ed4897b20A",
+                "network": "core-path-network"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "88d74406-9277-11ef-8000-286ed4897b20A",
+              "network": "core-path-network"
+            }
+          ]
+        },
+        {
+          "id": "88d7a0e0-9277-11ef-8000-286ed4897b20",
+          "name": "PWE3XC:NE=167772200",
+          "termination-points": [
+            {
+              "id": "88d909c6-9277-11ef-8000-286ed4897b20",
+              "name": "SAP:v510:PWE3TRAIL74:SIDEB",
+              "supporting": {
+                "tp": "bf3991da-b0de-4ca7-9099-db78d6099d30",
+                "node": "88d7a0e0-9277-11ef-8000-286ed4897b20A",
+                "network": "core-path-network"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "88d7a0e0-9277-11ef-8000-286ed4897b20A",
+              "network": "core-path-network"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "88d5f38a-9277-11ef-8000-286ed4897b20",
+          "name": "PWE3Trail-dynamic",
+          "source": {
+            "node": "88d74406-9277-11ef-8000-286ed4897b20",
+            "termination-point": "88d8aada-9277-11ef-8000-286ed4897b20"
+          },
+          "destination": {
+            "node": "88d7a0e0-9277-11ef-8000-286ed4897b20",
+            "termination-point": "88d909c6-9277-11ef-8000-286ed4897b20"
+          },
+          "supporting": [
+            {
+            }
+          ]
+        }
+      ],
+      "supporting-networks": ["core-path-network", "tunnel-paths-layer", "segments-paths-layer", "layer3-network"]
+    },
+    {
+      "id": "core-path-network",
+      "name": "Core Path Layer",
+      "nodes": [
+        {
+          "id": "88d74406-9277-11ef-8000-286ed4897b20A",
+          "name": "PWE3XC:NE=167772695",
+          "termination-points": [
+            {
+              "id": "1e7a5ccc-9ebf-430d-b738-cbb1b672d15f",
+              "name": "PW=30|5:Peer=1.1.1.208",
+              "supporting": {
+                "tp": "43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+                "node": "ff089f0a-a7b7-494b-92e4-022af7f20322",
+                "network": "static-cr-layer"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "SOURCE_LSR:b517a9b7-a7a1-4de6-a89d-c06421cef33b",
+              "network": "tunnel-paths-layer"
+            },
+            {
+              "node": "DEST_LSR:b517a9b7-a7a1-4de6-a89d-c06421cef33b",
+              "network": "tunnel-paths-layer"}
+          ]
+        },
+        {
+          "id": "88d7a0e0-9277-11ef-8000-286ed4897b20A",
+          "name": "PWE3XC:NE=167772200",
+          "termination-points": [
+            {
+              "id": "bf3991da-b0de-4ca7-9099-db78d6099d30",
+              "name": "PW=30|5:Peer=1.1.1.207",
+              "supporting": [
+                {
+                "tp": "12f330f7-997f-4588-8a4f-4a0e3296977d",
+                "node": "SOURCE_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+                "network": "tunnel-paths-layer"
+                },
+                {
+                  "tp": "1.1.1.208:DEST_TP_NEWID",
+                  "node": "DEST_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+                  "network": "tunnel-paths-layer"
+                }
+              ]
+            }
+          ],
+          "supporting": [
+            {
+              "node": "SOURCE_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+              "network": "tunnel-paths-layer"
+            },
+            {
+              "node": "DEST_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+              "network": "tunnel-paths-layer"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "fd23ea9e-927c-11ef-8000-286ed4897b20_NEWID1_DIRECTION1",
+          "name": "PWTrail_DIRECTION1",
+          "source": {
+            "node": "88d74406-9277-11ef-8000-286ed4897b20A",
+            "termination-point": "1e7a5ccc-9ebf-430d-b738-cbb1b672d15f"
+          },
+          "destination": {
+            "node": "88d7a0e0-9277-11ef-8000-286ed4897b20A",
+            "termination-point": "bf3991da-b0de-4ca7-9099-db78d6099d30"
+          },
+          "supporting": [
+            {
+              "link": "TUNNELTRAIL=41:SEG1:NEWID",
+              "network": "static-cr-layer"
+            },
+            {
+              "link": "TUNNELTRAIL=41:SEG2:NEWID",
+              "network": "static-cr-layer"
+            }
+          ]
+        },
+        {
+          "id": "fd23ea9e-927c-11ef-8000-286ed4897b20_NEWID2_REVERSE_DIRECTION1",
+          "name": "PWTrail_REVERSE_DIRECTION1",
+          "source": {
+            "node": "88d7a0e0-9277-11ef-8000-286ed4897b20A",
+            "termination-point": "bf3991da-b0de-4ca7-9099-db78d6099d30"
+          },
+          "destination": {
+            "node": "88d74406-9277-11ef-8000-286ed4897b20A",
+            "termination-point": "1e7a5ccc-9ebf-430d-b738-cbb1b672d15f"
+          },
+          "supporting": [
+            {
+              "link": "TUNNELTRAIL=41:SEG1:NEWID",
+              "network": "static-cr-layer"
+            },
+            {
+              "link": "TUNNELTRAIL=41:SEG2:NEWID",
+              "network": "static-cr-layer"
+            }
+          ]
+        }
+      ],
+      "supporting-networks": ["static-cr-layer", "layer3-network"]
+    },
+    {
+      "id": "tunnel-paths-layer",
+      "name": "TUNNEL-PATHS Layer",
+      "nodes": [
+        {
+          "id": "SOURCE_LSR:b517a9b7-a7a1-4de6-a89d-c06421cef33b",
+          "name": "SOURCE_LSR:b517a9b7-a7a1-4de6-a89d-c06421cef33b",
+          "termination-points": [
+            {
+              "id": "be34d7d9-e564-40f5-91e0-42564f5d94a5",
+              "name": "LSR:SOURCE:TUN38",
+              "supporting": {
+                "tp": "L3:43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+                "node": "NE=167772695",
+                "network": "layer3-network"
+              }
+            }
+          ]
+        },
+        {
+          "id": "DEST_LSR:b517a9b7-a7a1-4de6-a89d-c06421cef33b",
+          "name": "DEST_LSR:b517a9b7-a7a1-4de6-a89d-c06421cef33b",
+          "termination-points": [
+            {
+              "id": "1.1.1.207:DEST_TP_NEWID",
+              "name": "1.1.1.207:DEST_TP_NEWID",
+              "supporting": {
+                "tp": "L3:43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+                "node": "NE=167772695",
+                "network": "layer3-network"
+              }
+            }
+          ]
+        },
+        {
+          "id": "DEST_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+          "name": "DEST_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+          "termination-points": [
+            {
+              "id": "1.1.1.208:DEST_TP_NEWID",
+              "name": "1.1.1.208:DEST_TP_NEWID",
+              "supporting": {
+                "tp": "L3:06f7c0e4-08fb-48ef-9b8e-af980576bdd3",
+                "node": "NE=167772200",
+                "network": "layer3-network"
+              }
+            }
+          ]
+        },
+        {
+          "id": "SOURCE_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+          "name": "SOURCE_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+          "termination-points": [
+            {
+              "id": "12f330f7-997f-4588-8a4f-4a0e3296977d",
+              "name": "LSR:SOURCE:TUN44",
+              "supporting": {
+                "tp": "L3:06f7c0e4-08fb-48ef-9b8e-af980576bdd3",
+                "node": "NE=167772200",
+                "network": "layer3-network"
+              }
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "be34d7d9-e564-40f5-91e0-42564f5d94a5",
+          "name": "TUNNEL_INTERFACE:bdb8c976-eb3a-4749-bc2c-3217d99bc37a",
+          "source": {
+            "node": "SOURCE_LSR:b517a9b7-a7a1-4de6-a89d-c06421cef33b",
+            "termination-point": "be34d7d9-e564-40f5-91e0-42564f5d94a5"
+          },
+          "destination": {
+            "node": "DEST_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+            "termination-point": "1.1.1.208:DEST_TP_NEWID"
+          }
+        },
+        {
+          "id": "12f330f7-997f-4588-8a4f-4a0e3296977d",
+          "name": "TUNNEL_INTERFACE:12f330f7-997f-4588-8a4f-4a0e3296977d",
+          "source": {
+            "node": "SOURCE_LSR:738a2335-7a16-4471-928a-0df648a0386d",
+            "termination-point": "12f330f7-997f-4588-8a4f-4a0e3296977d"
+          },
+          "destination": {
+            "node": "DEST_LSR:b517a9b7-a7a1-4de6-a89d-c06421cef33b",
+            "termination-point": "1.1.1.207:DEST_TP_NEWID"
+          }
+        }
+      ],
+      "supporting-networks": ["layer3-network"]
+    },
+    {
+      "id": "segments-paths-layer",
+      "name": "SEGMENTS-PATHS Layer",
+      "nodes": [
+        {
+          "id": "NODE_SID:1.1.1.207",
+          "name": "NODE_SID:1.1.1.207",
+          "termination-points": [
+            {
+              "id": "ADJ_SID:11.11.11.11",
+              "name": "ADJ_SID:11.11.11.11",
+              "supporting": {
+                "tp": "L3:43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+                "node": "NE=167772695",
+                "network": "layer3-network"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "NE=167772695",
+              "network": "layer3-network"
+            }
+          ]
+        },
+        {
+          "id": "NODE_SID:1.1.1.209",
+          "name": "NODE_SID:1.1.1.209",
+          "termination-points": [
+            {
+              "id": "ADJ_SID:11.11.11.13",
+              "name": "ADJ_SID:11.11.11.13",
+              "supporting": {
+                "tp": "L3:74a8e346-648b-488d-9b53-16f445a4213a",
+                "node": "NE=167772538",
+                "network": "layer3-network"
+              }
+            },
+            {
+              "id": "ADJ_SID:8.9.0.2",
+              "name": "ADJ_SID:8.9.0.2",
+              "supporting": {
+                "tp": "L3:0e0a6aa6-235e-4e37-ba33-19bfb0dbf2b2",
+                "node": "NE=167772538",
+                "network": "layer3-network"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "NE=167772538",
+              "network": "layer3-network"
+            }
+          ]
+        },
+        {
+          "id": "NODE_SID:1.1.1.208",
+          "name": "NODE_SID:1.1.1.208",
+          "termination-points": [
+            {
+              "id": "ADJ_SID:8.9.0.1",
+              "name": "ADJ_SID:8.9.0.1",
+              "supporting": {
+                "tp": "L3:06f7c0e4-08fb-48ef-9b8e-af980576bdd3",
+                "node": "NE=167772200",
+                "network": "layer3-network"
+              }
+            }
+          ],
+          "supporting": [
+            {
+              "node": "NE=167772200",
+              "network": "layer3-network"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "SRC_NODE_SRC_TP__DEST_NODE_DEST_TP_HASH_NEWID_0",
+          "name": "seg0",
+          "source": {
+            "node": "NODE_SID:1.1.1.207",
+            "termination-point": "ADJ_SID:11.11.11.11"
+          },
+          "destination": {
+            "node": "NODE_SID:1.1.1.209",
+            "termination-point": "ADJ_SID:11.11.11.13"
+          }
+        },
+        {
+          "id": "SRC_NODE_SRC_TP__DEST_NODE_DEST_TP_HASH_NEWID_1",
+          "name": "seg1",
+          "source": {
+            "node": "NODE_SID:1.1.1.209",
+            "termination-point": "ADJ_SID:11.11.11.13"
+          },
+          "destination": {
+            "node": "NODE_SID:1.1.1.209",
+            "termination-point": "ADJ_SID:8.9.0.2"
+          }
+        },
+        {
+          "id": "SRC_NODE_SRC_TP__DEST_NODE_DEST_TP_HASH_NEWID_3",
+          "name": "seg2",
+          "source": {
+            "node": "NODE_SID:1.1.1.209",
+            "termination-point": "ADJ_SID:8.9.0.2"
+          },
+          "destination": {
+            "node": "NODE_SID:1.1.1.208",
+            "termination-point": "ADJ_SID:8.9.0.1"
+          }
+        }
+      ],
+      "supporting-networks": ["layer3-network"]
+    },
+    {
+      "id": "layer3-network",
+      "name": "Layer3 Connectivity Layer",
+      "nodes": [
+        {
+          "id": "NE=167772695",
+          "name": "FN:NE=167772695",
+          "termination-points": [
+            {
+              "id": "L3:43abf9e4-ee41-4f74-8a62-01430d3c6d9f",
+              "name": "FNLTP:GigabitEthernet0/2/3"
+            },
+            {
+              "id": "l3:eth-tp-2",
+              "name": "Ethernet1/2"
+            }
+          ]
+        },
+        {
+          "id": "NE=167772538",
+          "name": "FN:NE=167772538",
+          "termination-points": [
+            {
+              "id": "L3:74a8e346-648b-488d-9b53-16f445a4213a",
+              "name": "FNLTP:GigabitEthernet0/2/3"
+            },
+            {
+              "id": "L3:0e0a6aa6-235e-4e37-ba33-19bfb0dbf2b2",
+              "name": "FNLTP:GigabitEthernet0/2/2"
+            }
+          ]
+        },
+        {
+          "id": "NE=167772200",
+          "name": "FN:NE=167772200",
+          "termination-points": [
+            {
+              "id": "L3:06f7c0e4-08fb-48ef-9b8e-af980576bdd3",
+              "name": "FNLTP:GigabitEthernet0/2/1"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "id": "7807ffc0-c949-4365-9acc-23c4831937cb",
+          "name": "LL1",
+          "source": {
+            "node": "NE=167772538",
+            "termination-point": "L3:0e0a6aa6-235e-4e37-ba33-19bfb0dbf2b2"
+          },
+          "destination": {
+            "node": "NE=167772200",
+            "termination-point": "L3:06f7c0e4-08fb-48ef-9b8e-af980576bdd3"
+          }
+        },
+        {
+          "id": "27d2f2a9-016b-4842-b59a-5916404f3c1d",
+          "name": "LL2",
+          "source": {
+            "node": "NE=167772538",
+            "termination-point": "L3:74a8e346-648b-488d-9b53-16f445a4213a"
+          },
+          "destination": {
+            "node": "NE=167772695",
+            "termination-point": "L3:43abf9e4-ee41-4f74-8a62-01430d3c6d9f"
+          }
+        }
+      ],
+      "supporting-networks": []
+    }
+  ]
+}
